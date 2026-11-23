@@ -13,6 +13,15 @@ Use the recovered `cotago-N4U/apply-tracker` main at `cf1f23175671b5d8e286a95211
 - Desktop Chromium at 1440px and mobile touch emulation at 390px passed the initial action, draft generation, evidence approval, match recalculation, attachment, independent PDF text extraction, and version selection after reload. Signed-in hosted UI still needs a smoke check.
 - The revised walkthrough begins with Save sample job and offers one next action per stage. The fictional budget evidence is disclosed before the user approves it. Both résumé versions remain available to compare. There are no database migrations, production credentials, or DNS changes.
 
+## Résumé intake preview
+
+- Source commit: `e3d5b62d46a2cb2666afa820c8356a4daa8f44ce`
+- Ready preview deployment: `dpl_4tPZtVt5qGC13RwXSE9hQydhSSSK`
+- Preview URL: https://apply-tracker-whitelabel-ogy544b0j-n4u.vercel.app/
+- Open Use your own résumé in the walkthrough or expand Upload or paste your résumé in the Résumé section. PDF with selectable text, DOCX and TXT are extracted on the device using version-locked, same-origin scripts. Users can paste, correct, confirm, or clear the text. Personal inputs live in page memory and clear on reload.
+- Local desktop and mobile Chromium accepted pasted text and all three file formats, preserved existing text on a blank PDF import error, loaded no external resources, issued no submission requests and retained the sample workflow. Signed-in walkthrough on the hosted URL remains pending.
+- This preview does not score personal text against the sample job. Real job entry and comparison are the next integration milestone.
+
 ## Next decision
 
-Ask Cota to assess whether the guide makes the next action, the score change, and the attachment clear. The first real-data test should pair a user's own résumé with a user-added job. Integrate those entry points and their results with the recovered tracker's saved opportunity and package records in an isolated commercial backend. Keep package status distinct from application submission.
+Ask Cota to assess whether the guide makes the next action, the score change, and the attachment clear. The next real-data test should pair the résumé intake with a user-added job. Integrate those inputs and the resulting review with the recovered tracker's saved opportunity and package records in an isolated commercial backend. Keep package status distinct from application submission.
