@@ -1,3 +1,5 @@
+import { compareResume, maxRequirements, readRequirements, suggestRequirements } from "./resume-comparison.mjs";
+
 const maxFileBytes = 10 * 1024 * 1024;
 const maxTextLength = 85000;
 const maxDocumentXmlBytes = 4 * 1024 * 1024;
@@ -16,12 +18,17 @@ const status = byId("resume-import-status");
 const error = byId("resume-import-error");
 const jobTitle = byId("personal-job-title");
 const jobCompany = byId("personal-job-company");
+const jobDescription = byId("personal-job-description");
+const requirementText = byId("comparison-requirements");
+const compare = byId("compare-resume");
+const comparisonError = byId("comparison-error");
 const attach = byId("attach-personal-resume");
 const download = byId("download-personal-resume");
 const attachments = new Map();
 let imported;
 let confirmed;
 let job;
+let comparison;
 let importing = false;
 let zipModule;
 
@@ -52,6 +59,27 @@ function refreshControls() {
   byId("attachment-instructions").textContent = jobChanged
     ? "Save your job changes before attaching."
     : job && confirmed ? "Attach the confirmed résumé to " + job.label + "." : "Confirm your résumé and add a job to attach it.";
+  const postingChanged = jobChanged || (job && job.description !== jobDescription.value.trim());
+  const hasPosting = Boolean(job?.description && !postingChanged);
+  const form = byId("resume-comparison-form");
+  form.hidden = !hasPosting;
+  compare.disabled = importing || !hasPosting || !confirmed || !requirementText.value.trim();
+  byId("compare-instructions").textContent = postingChanged
+    ? "Select Use this job to update the comparison with your changes."
+    : hasPosting
+      ? (confirmed ? "Review the requirements, then compare them with your confirmed résumé." : "Confirm your résumé to run the comparison.")
+      : "Confirm your résumé and save a job description to compare.";
+  const current = hasPosting && !importing && comparison?.job === job && comparison?.resume === confirmed
+    && comparison?.requirements === requirementText.value;
+  byId("personal-comparison").hidden = !current;
+}
+
+function clearComparison() {
+  comparison = undefined;
+  byId("comparison-summary").textContent = "";
+  byId("personal-findings").replaceChildren();
+  comparisonError.hidden = true;
+  comparisonError.textContent = "";
 }
 
 function vendor(name) {
@@ -182,6 +210,7 @@ fileInput.addEventListener("change", async () => {
     const text = await importFile(file);
     imported = { file, text };
     confirmed = undefined;
+    clearComparison();
     textarea.value = text;
     status.textContent = "Text extracted. Check the reading order and edit anything that needs correction.";
     textarea.focus();
@@ -197,6 +226,7 @@ fileInput.addEventListener("change", async () => {
 
 textarea.addEventListener("input", () => {
   confirmed = undefined;
+  clearComparison();
   status.textContent = "";
   setError();
   refreshControls();
@@ -220,6 +250,7 @@ byId("resume-import-form").addEventListener("submit", (event) => {
 clear.addEventListener("click", () => {
   imported = undefined;
   confirmed = undefined;
+  clearComparison();
   textarea.value = "";
   setError();
   status.textContent = "Résumé text cleared.";
@@ -231,15 +262,57 @@ byId("personal-job-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const title = jobTitle.value.trim();
   const company = jobCompany.value.trim();
+  const description = jobDescription.value.trim();
   if (!title) return;
-  job = { title, company, label: company ? title + " at " + company : title, key: JSON.stringify([title, company]) };
+  const key = JSON.stringify([title, company]);
+  if (job?.key !== key || job.description !== description) {
+    job = { title, company, description, label: company ? title + " at " + company : title, key };
+    requirementText.value = suggestRequirements(description);
+    clearComparison();
+  }
   refreshControls();
   byId("attachment-instructions").textContent = confirmed
     ? "Job saved. Attach the confirmed résumé to " + job.label + "."
     : "Job saved. Confirm your résumé to attach it to " + job.label + ".";
+  if (description) requirementText.focus();
 });
 jobTitle.addEventListener("input", refreshControls);
 jobCompany.addEventListener("input", refreshControls);
+jobDescription.addEventListener("input", refreshControls);
+requirementText.addEventListener("input", () => {
+  clearComparison();
+  refreshControls();
+});
+
+byId("resume-comparison-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (compare.disabled) return;
+  clearComparison();
+  const requirements = readRequirements(requirementText.value);
+  if (!requirements.length || requirements.length > maxRequirements) {
+    comparisonError.textContent = "Enter between 1 and " + maxRequirements + " requirements, one per line.";
+    comparisonError.hidden = false;
+    refreshControls();
+    return;
+  }
+  const findings = compareResume(confirmed.text, requirements);
+  const related = findings.filter((finding) => finding.evidence).length;
+  byId("comparison-summary").textContent = "Related résumé text for " + related + " of " + findings.length + " requirements";
+  byId("personal-findings").replaceChildren(...findings.map(({ category, text, evidence }) => {
+    const item = document.createElement("li");
+    if (!evidence) item.className = "gap";
+    const title = document.createElement("strong");
+    const label = category === "unspecified" ? "" : category[0].toUpperCase() + category.slice(1) + " · ";
+    title.textContent = label + text;
+    const detail = document.createElement("p");
+    detail.textContent = evidence ? "Related text: “" + evidence + "”" : "No clear text match. Check for equivalent experience or confirm the gap.";
+    item.append(title, detail);
+    return item;
+  }));
+  comparison = { job, resume: confirmed, requirements: requirementText.value };
+  refreshControls();
+  byId("comparison-summary").focus();
+});
 
 attach.addEventListener("click", () => {
   if (attach.disabled) return;
@@ -267,6 +340,9 @@ function resetPersonalWorkspace() {
   textarea.value = "";
   jobTitle.value = "";
   jobCompany.value = "";
+  jobDescription.value = "";
+  requirementText.value = "";
+  clearComparison();
   status.textContent = "";
   setError();
   refreshControls();

@@ -4,6 +4,7 @@ await mkdir("dist/vendor", { recursive: true });
 await Promise.all([
   cp("index.html", "dist/index.html"),
   cp("resume-import.mjs", "dist/resume-import.mjs"),
+  cp("resume-comparison.mjs", "dist/resume-comparison.mjs"),
   cp("node_modules/@zip.js/zip.js/dist/zip.js", "dist/vendor/zip.js"),
   cp("node_modules/@zip.js/zip.js/LICENSE", "dist/vendor/ZIP-LICENSE"),
   cp("node_modules/pdfjs-dist/build/pdf.min.mjs", "dist/vendor/pdf.min.mjs"),
