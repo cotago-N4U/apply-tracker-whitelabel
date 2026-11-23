@@ -47,6 +47,14 @@ Use the recovered `cotago-N4U/apply-tracker` main at `cf1f23175671b5d8e286a95211
 - The browser now excludes employer boilerplate, accommodations, and salary footers. It checks common descriptions of related work as well as shared words, treats alternatives independently, and flags experience durations for manual review. The summary counts possible excerpts.
 - The Amazon excerpt supplied by Cota retains 10 qualifications. A synthetic director résumé yielded 9 possible excerpts, one unresolved requirement, and no excerpts on an unrelated résumé. Regression: `node --test tests/resume-comparison.test.mjs`. Desktop and emulated mobile Chromium also verified the flow. The test did not use Cota’s résumé.
 
+## Comparison v3
+
+- Source commit: `5a35c6ac17d6390c94863510c94fa1cc7fa5299d`
+- Ready Vercel preview deployment: `dpl_C6aNbgwvZ2eSkk32m2dYjCMD7eyV`
+- Preview URL: https://apply-tracker-whitelabel-52spsj4zd-n4u.vercel.app/
+- The comparison shows a visible version and counts required and preferred items before running. Heading normalization supports copied Markdown headings. Longer PDF text lines are compared in overlapping excerpts. Duration evidence recognizes work-history date ranges with month names and still requires user verification.
+- Regression tests cover the Amazon posting's layout, two required and eight preferred qualifications, and creative leadership/date evidence in long synthetic résumé text. Desktop and mobile browser smoke tests also pass. The actual user PDF and signed-in hosted walkthrough remain unverified.
+
 ## Next decision
 
 Have Cota assess the comparison using a real role. Collect examples of useful excerpts, irrelevant matches and qualifications missed through different wording before choosing revision assistance or a richer comparison method. Keep package status distinct from application submission.
