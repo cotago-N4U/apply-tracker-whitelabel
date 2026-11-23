@@ -179,12 +179,16 @@ select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); backg
           </form>
         </section>
         <section class="card" aria-labelledby="personal-compare-heading">
-          <h2 id="personal-compare-heading">Compare with your résumé</h2>
+          <div class="row">
+            <h2 id="personal-compare-heading">Compare with your résumé</h2>
+            <span class="status pending">Comparison v3</span>
+          </div>
           <p class="caption" id="compare-instructions">Confirm your résumé and save a job description to compare.</p>
           <form class="resume-import" id="resume-comparison-form" hidden>
             <label for="comparison-requirements">Job requirements to compare</label>
             <p class="hint" id="comparison-requirements-hint">Check the suggestions against the posting. Edit or add up to 25 requirements, one per line. Use “Required:” or “Preferred:” where the posting says so.</p>
             <textarea id="comparison-requirements" maxlength="18000" aria-describedby="comparison-requirements-hint" required></textarea>
+            <p class="hint" id="requirement-count" aria-live="polite"></p>
             <div class="controls"><button type="submit" id="compare-resume" disabled>Compare with my résumé</button></div>
             <p class="error" id="comparison-error" role="alert" hidden></p>
           </form>

@@ -63,6 +63,15 @@ function refreshControls() {
   const hasPosting = Boolean(job?.description && !postingChanged);
   const form = byId("resume-comparison-form");
   form.hidden = !hasPosting;
+  if (hasPosting) {
+    const requirements = readRequirements(requirementText.value);
+    const required = requirements.filter((item) => item.category === "required").length;
+    const preferred = requirements.filter((item) => item.category === "preferred").length;
+    byId("requirement-count").textContent = requirements.length
+      ? requirements.length + (requirements.length === 1 ? " requirement to compare" : " requirements to compare") +
+        (required || preferred ? " · " + required + " required · " + preferred + " preferred" : "")
+      : "Add a qualification from the posting above to start the comparison.";
+  }
   compare.disabled = importing || !hasPosting || !confirmed || !requirementText.value.trim();
   byId("compare-instructions").textContent = postingChanged
     ? "Select Use this job to update the comparison with your changes."

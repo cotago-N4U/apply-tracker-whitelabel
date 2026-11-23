@@ -22,6 +22,11 @@ const requirements = readRequirements(suggestRequirements(posting));
 assert.equal(requirements.length, 10);
 assert.equal(requirements.filter(row => row.category === "required").length, 2);
 assert.equal(requirements.filter(row => row.category === "preferred").length, 8);
+const copiedPage = "# Creative Director, Amazon XCM\n\n## Description\nA creative leadership role.\n" +
+  "Key job responsibilities\n- Deep understanding of digital and new media.\n" +
+  posting.replace("Basic Qualifications", "## Basic Qualifications").replace("Preferred Qualifications", "**Preferred Qualifications**") +
+  "\n## Job details\nSanta Monica\nMarketing";
+assert.deepEqual(readRequirements(suggestRequirements(copiedPage)), requirements);
 assert.equal(readRequirements("Preferred: Experience reviewing requests for reasonable accommodation").length, 1);
 assert.equal(readRequirements("Required: Managed budgets of $500,000 to $1,000,000").length, 1);
 assert.equal(readRequirements("Preferred: USA, CA, Santa Monica - 167,700.00 - 226,900.00 USD annually").length, 0);
@@ -50,4 +55,12 @@ assert.match(results[8].evidence, /Piloted/);
 assert.match(results[9].evidence, /Presented/);
 const unrelated = compareResume("Seasonal logistics clerk\nHandled inventory counts", requirements);
 assert.equal(unrelated.filter(row => row.evidence).length, 0);
-console.log("Pasted Amazon qualifications: 10 retained, 3 footer entries excluded, 9 possible excerpts and 1 unresolved requirement on a synthetic résumé.");
+
+const singlePdfLine = "Background materials compiled ".repeat(40) +
+  "Senior Director, Brand, Creative & Marketing | Apr 2011 – Mar 2026 " +
+  "Other details ".repeat(40);
+const [creativeExperience, alternative] = compareResume(singlePdfLine, requirements.slice(0, 2));
+assert.match(creativeExperience.evidence, /Senior Director, Brand, Creative & Marketing/);
+assert.match(alternative.evidence, /2011 – Mar 2026/);
+assert.match(alternative.note, /which alternative/);
+console.log("Plain and formatted posting copies retain 10 qualifications. Comparison finds title and month-year ranges in long PDF text.");

@@ -9,18 +9,18 @@ const headingPatterns = [
   ["Preferred", /^(?:(?:preferred|desired|nice.to.have|bonus)(?:\s+(?:qualifications|requirements|skills|experience))?|what (?:would be|will be) a plus)$/i],
   ["Required", /^(?:requirements|required(?:\s+(?:qualifications|requirements|skills|experience))?|(?:minimum|basic|essential|must.have)\s+(?:qualifications|requirements|skills|experience))$/i],
   ["Unspecified", /^(?:qualifications|what you(?: will|'ll)? (?:bring|need)|education and experience|skills and experience|knowledge, skills and abilities)$/i],
-  ["Ignore", /^(?:about (?:us|the role|the company)|responsibilities|(?:key|core|essential) (?:responsibilities|duties)|what you(?: will|'ll) do|(?:pay|salary|compensation)(?: range| and benefits)?|benefits|what we offer|equal (?:employment )?opportunity|eeo|how to apply|accommodations)$/i],
+  ["Ignore", /^(?:description|job details|about (?:us|the role|the company)|responsibilities|(?:key|core|essential) (?:job )?(?:responsibilities|duties)|what you(?: will|'ll) do|(?:pay|salary|compensation)(?: range| and benefits)?|benefits|what we offer|equal (?:employment )?opportunity|eeo|how to apply|accommodations)$/i],
 ];
 const bullet = /^\s*(?:[•●▪◦‣*–—-]|\d{1,2}[.)])\s+/u;
 const qualification = /\b(?:years? of|experience (?:in|with|leading|managing)|ability to|proficien(?:t|cy)|bachelor|master(?:'s)? degree|certification|working knowledge|track record|demonstrated|strong\s+\w+\s+skills)\b/i;
 const postingFooter = /\bis an equal (?:employment )?opportunity employer\b|\b(?:does not discriminate|legally protected status|inclusive culture empowers)\b|\b(?:if you (?:have a disability|need)|to request an accommodation|please contact your recruiting partner)\b|\/how-we-hire\/accommodations|\b(?:USD|CAD|GBP|EUR)\s+(?:annually|per year|per hour)\b|\b(?:base pay|salary|compensation)\s+(?:range|for (?:this|the) (?:role|position))\b|^\$\s*\d[\d,.]*\s*(?:–|—|-|to)\s*\$?\s*\d/i;
+const careerDates = /\b(?:19|20)\d{2}\s*(?:[-–—]|\bto\b)\s*(?:(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?\s+)?(?:present|current|(?:19|20)\d{2})\b/i;
 
 // These cues locate related evidence. They do not verify every clause in a requirement.
 const evidenceCues = [
   [/\b(?:creative executive|executive creative|creative leadership)\b/i,
     /\b(?:creative|creativity)\b/i, /\b(?:executive|director|vp|vice president|head of|chief)\b/i],
-  [/\bprofessional experience\b/i,
-    /\b(?:19|20)\d{2}\s*[-–—]\s*(?:present|current|(?:19|20)\d{2})\b/i],
+  [/\bprofessional experience\b/i, careerDates],
   [/\bbachelor(?:['’]s)?\b/i,
     /\b(?:bachelor\w*|baccalaureate|BFA|BBA|BSc|B\.[AS]\.?)\b|\b(?:BA|BS) in\b/i],
   [/\b(?:concept to completion|creative input|creative development and execution|end.to.end)\b/i,
@@ -42,11 +42,16 @@ const evidenceCues = [
     /\b(?:present(?:ed|ations?)|briefed|pitched|facilitated (?:reviews|workshops))\b/i],
 ];
 
+function cleanPostingLine(raw) {
+  return raw.trim().replace(/^#{1,6}\s+/, "").replace(bullet, "")
+    .replace(/^\*\*(.+?)\*\*(?=\s*:?(?:\s|$))/, "$1").trim();
+}
+
 export function suggestRequirements(description) {
   const suggestions = [];
   let section;
   for (const raw of description.split(/\r?\n/)) {
-    const line = raw.replace(bullet, "").trim();
+    const line = cleanPostingLine(raw);
     if (!line) continue;
     const heading = headingPatterns.find(([, pattern]) => pattern.test(line.replace(/:\s*$/, "")));
     if (heading) {
@@ -70,7 +75,7 @@ export function readRequirements(value) {
   const rows = [];
   const seen = new Set();
   for (const raw of value.split(/\r?\n/)) {
-    const line = raw.replace(bullet, "").trim();
+    const line = cleanPostingLine(raw);
     if (!line) continue;
     const prefix = /^(required|preferred|unspecified)\s*:\s*/i.exec(line);
     const text = prefix ? line.slice(prefix[0].length).trim() : line;
@@ -96,15 +101,27 @@ function terms(value) {
   return [...new Set(words(value).filter((word) => word.length > 1 && !genericWords.has(word) && !/^\d+$/.test(word)).map(stem))];
 }
 
+function excerptWindows(line) {
+  if (line.length <= 450) return [line];
+  const tokens = [...line.matchAll(/\S+/g)];
+  const windows = [];
+  for (let start = 0; start < tokens.length; start += 24) {
+    const end = tokens[Math.min(start + 37, tokens.length - 1)];
+    const text = line.slice(tokens[start].index, end.index + end[0].length);
+    windows.push(text.length <= 450 ? text : text.slice(0, 450).replace(/\s+\S*$/, ""));
+  }
+  return windows;
+}
+
 function candidateLines(resume) {
   const rows = resume.split(/\r?\n/).flatMap((raw) =>
     raw.trim().split(/(?<=[.!?])\s+(?=[A-Z])/).map((text) => text.trim()));
   return rows.flatMap((line, index) => {
-    if (!line || line.length > 1000) return [];
+    if (!line) return [];
     const next = rows[index + 1];
     const joined = next && !/[.!?]$/.test(line) && !bullet.test(next) && next.length < 300
       ? line + " " + next : null;
-    return [line, ...(joined && joined.length <= 450 ? [joined] : [])];
+    return [...excerptWindows(line), ...(joined && joined.length <= 450 ? [joined] : [])];
   });
 }
 
