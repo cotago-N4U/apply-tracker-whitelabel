@@ -39,6 +39,14 @@ Use the recovered `cotago-N4U/apply-tracker` main at `cf1f23175671b5d8e286a95211
 - In Your application, confirm a résumé, paste the job description under Your job, and choose Use this job. Verify or edit the extracted requirements before comparing. The browser finds related résumé excerpts by word overlap and labels gaps as missing clear text. It does not establish qualification or provide an ATS score.
 - Local Chromium at desktop and emulated mobile widths passed suggestions, excerpts, missing evidence, manual requirements, stale-result invalidation, attachment, and reload clearance. The test checked that no input was sent or persisted. Signed-in hosted walkthrough remains pending.
 
+## Requirement filtering and evidence cues
+
+- Source commit: `948e3b9f72306296b192f9c6e5e90d8ca6c5ed9b`
+- Ready Vercel preview deployment: `dpl_jutj25Au1c1E3Pmry2Wsm5LWg9Fy`
+- Preview URL: https://apply-tracker-whitelabel-rfbuas0xl-n4u.vercel.app/
+- The browser now excludes employer boilerplate, accommodations, and salary footers. It checks common descriptions of related work as well as shared words, treats alternatives independently, and flags experience durations for manual review. The summary counts possible excerpts.
+- The Amazon excerpt supplied by Cota retains 10 qualifications. A synthetic director résumé yielded 9 possible excerpts, one unresolved requirement, and no excerpts on an unrelated résumé. Regression: `node --test tests/resume-comparison.test.mjs`. Desktop and emulated mobile Chromium also verified the flow. The test did not use Cota’s résumé.
+
 ## Next decision
 
 Have Cota assess the comparison using a real role. Collect examples of useful excerpts, irrelevant matches and qualifications missed through different wording before choosing revision assistance or a richer comparison method. Keep package status distinct from application submission.
