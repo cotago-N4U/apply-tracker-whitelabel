@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COTAFORM Apply · Application package preview</title>
+<style>
+:root {
+  color-scheme: light; --ink:#172a32; --muted:#4d626b; --surface:#fff;
+  --canvas:#f3f6f6; --line:#d8e2e2; --accent:#194f49; --soft:#e9f2ed; --warm:#fff4dd;
+  font: 16px/1.55 system-ui, sans-serif;
+}
+* { box-sizing:border-box }
+body { margin:0; background:var(--canvas); color:var(--ink) }
+[hidden] { display:none !important }
+header { background:#112a30; color:#fff }
+.top, main { max-width:1120px; margin:auto; padding-inline:clamp(16px,4vw,42px) }
+.top { min-height:66px; display:flex; align-items:center; justify-content:space-between; gap:12px }
+.brand { font-weight:750; letter-spacing:.035em }
+.brand span { margin-left:.35em; font-weight:450 }
+.preview { font-size:.8rem; color:#d7e6e1 }
+main { padding-block:clamp(26px,6vw,68px) 54px }
+h1,h2,h3,p { margin:0 }
+h1 { font-size:clamp(2rem,6vw,3.65rem); line-height:1.05; letter-spacing:-.055em }
+h2 { font-size:1.25rem; letter-spacing:-.02em }
+h3 { font-size:1rem }
+.subtitle { color:var(--muted); margin-top:.75rem }
+.workspace { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(0,1fr); gap:20px; align-items:start; margin-top:30px }
+.stack { display:grid; gap:18px; min-width:0 }
+.card { border:1px solid var(--line); border-radius:16px; background:var(--surface); padding:clamp(16px,3vw,25px); min-width:0 }
+.row { display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap }
+.caption, .hint, summary { color:var(--muted); font-size:.9rem }
+.caption { margin-top:4px }
+.requirements { margin:12px 0 0; padding-left:20px }
+.requirements li+li { margin-top:5px }
+.controls { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px }
+button, .button {
+  font:inherit; font-size:.9rem; font-weight:650; border:1px solid var(--accent); border-radius:8px;
+  min-height:42px; padding:8px 14px; background:var(--accent); color:#fff; cursor:pointer;
+  display:inline-flex; align-items:center; text-decoration:none;
+}
+.secondary { background:var(--surface); color:var(--accent) }
+button:disabled { border-color:var(--line); background:#eaf0ef; color:#4d626b; cursor:default }
+:focus-visible { outline:3px solid #7552ba; outline-offset:3px }
+.status { font-size:.82rem; font-weight:650; padding:4px 10px; border-radius:99px; background:var(--soft); color:var(--accent) }
+.status.pending { background:#eef0f1; color:#40535b }
+.check { margin-top:18px; border-top:1px solid var(--line); padding-top:16px }
+.score { color:var(--accent); font-size:1.4rem; letter-spacing:-.04em; font-weight:750 }
+.findings { list-style:none; margin:10px 0 0; padding:0 }
+.findings li { margin-top:8px; padding:8px 10px; border-radius:8px; background:var(--soft); font-size:.88rem }
+.findings .gap { background:var(--warm) }
+.findings p { margin-top:3px; color:#385057 }
+.document { margin-top:16px; padding:14px; background:#f6f8f8; border:1px solid var(--line); border-radius:8px; white-space:pre-wrap; overflow-wrap:anywhere; font-size:.88rem }
+summary { cursor:pointer; font-weight:650 }
+summary + ul { margin-bottom:0 }
+select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); background:#fff; padding:7px; border:1px solid #849797; border-radius:6px }
+#feedback { min-height:1.5em; margin-top:10px }
+@media (max-width:750px) {
+  .workspace { grid-template-columns:1fr }
+  .preview { font-size:.75rem }
+}
+</style>
+</head>
+<body>
+<header><div class="top"><div class="brand">COTAFORM <span>Apply</span></div><div class="preview">Demo workspace</div></div></header>
+<main>
+  <h1>Application package</h1>
+  <p class="subtitle">Save a job, build a tailored résumé, and review it before you apply.</p>
+  <div class="workspace">
+    <div class="stack">
+      <section class="card" aria-labelledby="job-title">
+        <div class="row"><h2 id="job-title"></h2><span class="status pending" id="job-status">Sample posting</span></div>
+        <p class="caption" id="job-meta"></p>
+        <ul class="requirements" id="job-requirements"></ul>
+        <div class="controls">
+          <button id="save-job">Save sample job</button>
+          <button id="generate" class="secondary" disabled>Generate résumé</button>
+        </div>
+        <p class="hint" id="feedback" role="status"></p>
+      </section>
+      <section class="card" aria-labelledby="resume-heading">
+        <div class="row"><h2 id="resume-heading">Résumé</h2><label id="version-label" hidden>Version <select id="version"></select></label></div>
+        <p class="caption" id="resume-caption">Generate a résumé from the sample career profile to review it here.</p>
+        <pre class="document" id="resume" hidden></pre>
+        <div class="controls" id="resume-actions" hidden>
+          <button id="attach">Attach PDF to job</button>
+          <button class="secondary" id="download" hidden>Download PDF</button>
+        </div>
+        <p class="hint" id="storage-status" role="status" hidden></p>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card" aria-labelledby="review-heading">
+        <h2 id="review-heading">Résumé review</h2>
+        <p class="caption" id="review-empty">Results appear automatically when you generate a version.</p>
+        <div class="check" id="match-panel" hidden>
+          <div class="row"><h3>Résumé Match</h3><span class="score" id="score"></span></div>
+          <p class="hint">Required qualifications count twice as much as preferred qualifications.</p>
+          <ul class="findings" id="findings"></ul>
+        </div>
+        <div class="check" id="ats-panel" hidden>
+          <div class="row"><h3>ATS Readability</h3><span class="status" id="ats-status"></span></div>
+          <p class="caption" id="ats-detail"></p>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Sample career profile</h2>
+        <p class="caption">Jordan Lee · Fictional candidate</p>
+        <p class="hint">Demo progress is saved in this browser.</p>
+        <details class="check">
+          <summary>View approved experience</summary>
+          <ul class="requirements" id="profile-evidence"></ul>
+        </details>
+      </section>
+    </div>
+  </div>
+</main>
+<script>
+"use strict";
+
+const job = {
+  id: "harborline-brand-lead",
+  revision: "sample-job-1",
+  title: "Brand & Creative Operations Lead",
+  company: "Harborline Health",
+  location: "Remote",
+  requirements: [
+    { id: "campaigns", label: "Lead cross-functional brand campaigns", required: true },
+    { id: "operations", label: "Improve creative intake and review workflows", required: true },
+    { id: "healthcare", label: "Experience in regulated healthcare marketing", required: true },
+    { id: "budget", label: "Own an annual marketing budget", required: false },
+  ],
+};
+const profile = {
+  revision: "sample-profile-1",
+  name: "Jordan Lee",
+  contact: "jordan.lee@example.com",
+  title: "Senior Brand Manager | Vale Health Cooperative | 2021-Present",
+  evidence: [
+    { id: "campaigns", text: "Led cross-functional brand campaigns across email, web, and print in partnership with marketing and design." },
+    { id: "operations", text: "Standardized creative intake and review, reducing average approval time from eight days to five." },
+    { id: "healthcare", text: "Partnered with compliance to review member communications for a regulated health plan." },
+  ],
+};
+
+const storageKey = "cotaform-apply-demo-v1";
+const byId = (id) => document.getElementById(id);
+const listItem = (value) => Object.assign(document.createElement("li"), { textContent: value });
+let state = { jobId: null, versions: [] };
+let selected = null;
+let storageAvailable = true;
+
+try {
+  const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+  if (saved?.jobId === job.id && Array.isArray(saved.versions)) state = saved;
+} catch {
+  storageAvailable = false;
+}
+selected = state.versions.at(-1)?.number ?? null;
+
+function persist() {
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  } catch {
+    storageAvailable = false;
+  }
+}
+
+function buildResume() {
+  const evidenceById = new Map(profile.evidence.map((item) => [item.id, item.text]));
+  const evidence = job.requirements.flatMap(({ id }) =>
+    evidenceById.has(id) ? [{ id, text: evidenceById.get(id) }] : []
+  );
+  return {
+    evidence,
+    lines: [
+      profile.name, profile.contact, "", "PROFESSIONAL SUMMARY",
+      "Brand and creative operations leader with experience in regulated healthcare marketing.",
+      "", "EXPERIENCE", profile.title, ...evidence.map(({ text }) => "- " + text),
+    ],
+  };
+}
+
+function formatLines(lines) {
+  return lines.flatMap((line) => {
+    const wrapped = [];
+    let row = "";
+    for (const word of line.split(" ")) {
+      if (row.length + word.length + 1 > 70) {
+        wrapped.push(row);
+        row = word;
+      } else {
+        row = row ? row + " " + word : word;
+      }
+    }
+    return [...wrapped, row];
+  });
+}
+
+function escapePdfText(value) {
+  return value.replace(/[\\()]/g, "\\$&");
+}
+
+function makePdf(lines) {
+  const instructions = [
+    "BT", "/F1 12 Tf", "54 744 Td", "17 TL",
+    ...lines.map((line) => "(" + escapePdfText(line) + ") Tj\nT*"),
+    "ET", "",
+  ].join("\n");
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>",
+    "<< /Length " + instructions.length + " >>\nstream\n" + instructions + "endstream",
+  ];
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length);
+    pdf += (index + 1) + " 0 obj\n" + object + "\nendobj\n";
+  });
+  const startXref = pdf.length;
+  pdf += "xref\n0 " + offsets.length + "\n0000000000 65535 f \n";
+  pdf += offsets.slice(1).map((offset) => String(offset).padStart(10, "0") + " 00000 n \n").join("");
+  return pdf + "trailer\n<< /Size " + offsets.length + " /Root 1 0 R >>\nstartxref\n" + startXref + "\n%%EOF\n";
+}
+
+function evaluate(evidence, pdf, lines) {
+  const evidenceById = new Map(evidence.map((item) => [item.id, item.text]));
+  const findings = job.requirements.map((requirement) => ({
+    ...requirement,
+    evidence: evidenceById.get(requirement.id) ?? null,
+    weight: requirement.required ? 2 : 1,
+  }));
+  const total = findings.reduce((sum, item) => sum + item.weight, 0);
+  const covered = findings.reduce((sum, item) => sum + (item.evidence ? item.weight : 0), 0);
+  // This checker reads the text operators of this demo's controlled PDF template.
+  // Independent PDF extraction is covered by the browser smoke test.
+  const extracted = [...pdf.matchAll(/^\(((?:\\.|[^\\)])*)\) Tj$/gm)]
+    .map((match) => match[1].replace(/\\([\\()])/g, "$1"));
+  const order = extracted.length === lines.length && extracted.every((line, index) => line === lines[index]);
+  const headings = ["PROFESSIONAL SUMMARY", "EXPERIENCE"].every((heading) => extracted.includes(heading));
+  const contact = extracted.includes(profile.contact);
+  return { score: Math.round(100 * covered / total), findings, checks: { order, headings, contact } };
+}
+
+function currentVersion() {
+  return state.versions.find((item) => item.number === selected);
+}
+
+function render() {
+  const version = currentVersion();
+  byId("job-status").textContent = state.jobId ? "Saved to tracker" : "Sample posting";
+  byId("job-status").classList.toggle("pending", !state.jobId);
+  byId("save-job").disabled = Boolean(state.jobId);
+  byId("generate").disabled = !state.jobId;
+  byId("generate").textContent = state.versions.length ? "Generate new version" : "Generate résumé";
+  for (const id of ["version-label", "resume", "resume-actions", "match-panel", "ats-panel"]) {
+    byId(id).hidden = !version;
+  }
+  byId("review-empty").hidden = Boolean(version);
+  if (!version) return;
+  byId("version").replaceChildren(...[...state.versions].reverse().map((item) =>
+    new Option("v" + item.number + (item.attached ? " · attached" : " · draft"), item.number)
+  ));
+  byId("version").value = String(selected);
+  byId("resume-caption").textContent = version.attached
+    ? "PDF attached to " + job.title + " · Version " + version.number
+    : "Draft · Generated from the approved sample evidence";
+  byId("resume").textContent = version.lines.join("\n");
+  byId("attach").disabled = version.attached;
+  byId("attach").textContent = version.attached ? "PDF attached" : "Attach PDF to job";
+  byId("download").hidden = !version.attached;
+  byId("storage-status").hidden = storageAvailable;
+  byId("storage-status").textContent = storageAvailable ? "" : "Browser storage is unavailable. Work lasts until you close this page.";
+  byId("score").textContent = version.review.score + " / 100";
+  byId("findings").replaceChildren(...version.review.findings.map((item) => {
+    const li = document.createElement("li");
+    if (!item.evidence) li.className = "gap";
+    const title = document.createElement("strong");
+    title.textContent = (item.evidence ? "Covered · " : "Gap · ") + item.label;
+    const detail = document.createElement("p");
+    detail.textContent = item.evidence ?? "Add this only if you can confirm relevant experience.";
+    li.append(title, detail);
+    return li;
+  }));
+  const checkLabels = { order: "extractable text and reading order", headings: "section headings", contact: "contact details" };
+  const issues = Object.keys(version.review.checks).filter((key) => !version.review.checks[key]);
+  byId("ats-status").textContent = issues.length ? issues.length + " to review" : "3 checks passed";
+  byId("ats-detail").textContent = issues.length
+    ? "Review " + issues.map((key) => checkLabels[key]).join(", ") + " in this PDF."
+    : "Text extraction and reading order, section headings, and contact details passed in this PDF.";
+}
+
+byId("job-title").textContent = job.title;
+byId("job-meta").textContent = job.company + " · " + job.location;
+byId("job-requirements").replaceChildren(...job.requirements.map((item) =>
+  listItem((item.required ? "Required · " : "Preferred · ") + item.label)
+));
+byId("profile-evidence").replaceChildren(...profile.evidence.map((item) => listItem(item.text)));
+
+byId("save-job").addEventListener("click", () => {
+  state.jobId = job.id;
+  persist();
+  render();
+  byId("feedback").textContent = "Job saved. You can generate a résumé now.";
+  byId("generate").focus();
+});
+byId("generate").addEventListener("click", () => {
+  if (!state.jobId) return;
+  const { evidence, lines: sourceLines } = buildResume();
+  const lines = formatLines(sourceLines);
+  const pdf = makePdf(lines);
+  const number = (state.versions.at(-1)?.number ?? 0) + 1;
+  state.versions.push({
+    number, lines, pdf, review: evaluate(evidence, pdf, lines), attached: false,
+    jobRevision: job.revision, profileRevision: profile.revision,
+  });
+  selected = number;
+  persist();
+  render();
+  byId("feedback").textContent = "Version " + number + " is ready to review.";
+});
+byId("version").addEventListener("change", (event) => {
+  selected = Number(event.target.value);
+  render();
+});
+byId("attach").addEventListener("click", () => {
+  const version = currentVersion();
+  if (!version || version.attached) return;
+  version.attached = true;
+  persist();
+  render();
+  byId("feedback").textContent = "Version " + version.number + " attached to the saved job.";
+  byId("download").focus();
+});
+byId("download").addEventListener("click", () => {
+  const version = currentVersion();
+  if (!version?.attached) return;
+  const url = URL.createObjectURL(new Blob([version.pdf], { type: "application/pdf" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "jordan-lee-resume-v" + version.number + ".pdf";
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+});
+render();
+</script>
+</body>
+</html>
