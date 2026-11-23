@@ -297,16 +297,23 @@ byId("resume-comparison-form").addEventListener("submit", (event) => {
   }
   const findings = compareResume(confirmed.text, requirements);
   const related = findings.filter((finding) => finding.evidence).length;
-  byId("comparison-summary").textContent = "Related résumé text for " + related + " of " + findings.length + " requirements";
-  byId("personal-findings").replaceChildren(...findings.map(({ category, text, evidence }) => {
+  byId("comparison-summary").textContent = "Possible résumé evidence for " + related + " of " + findings.length + " requirements";
+  byId("personal-findings").replaceChildren(...findings.map(({ category, text, evidence, wording, note }) => {
     const item = document.createElement("li");
     if (!evidence) item.className = "gap";
     const title = document.createElement("strong");
     const label = category === "unspecified" ? "" : category[0].toUpperCase() + category.slice(1) + " · ";
     title.textContent = label + text;
     const detail = document.createElement("p");
-    detail.textContent = evidence ? "Related text: “" + evidence + "”" : "No clear text match. Check for equivalent experience or confirm the gap.";
+    detail.textContent = evidence
+      ? (wording ? "Related wording: “" : "Possible evidence: “") + evidence + "”"
+      : "No excerpt found. Check whether your experience is described differently or needs to be added.";
     item.append(title, detail);
+    if (note) {
+      const check = document.createElement("p");
+      check.textContent = note;
+      item.append(check);
+    }
     return item;
   }));
   comparison = { job, resume: confirmed, requirements: requirementText.value };
