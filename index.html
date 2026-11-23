@@ -29,6 +29,14 @@ h3 { font-size:1rem }
 .guide .caption { max-width:72ch }
 .guide-link { align-self:center; color:var(--accent); font-size:.9rem; font-weight:650 }
 .sample-evidence { margin-top:10px; max-width:70ch; padding:8px 12px; border-left:3px solid #7ea99e; font-size:.9rem }
+.resume-entry { margin-top:12px }
+.resume-import { margin-top:14px; padding-top:14px; border-top:1px solid var(--line) }
+.resume-import label { display:block; margin-top:14px; font-size:.9rem; font-weight:650 }
+.resume-import input, .resume-import textarea { display:block; width:100%; margin-top:5px; font:inherit }
+.resume-import textarea { min-height:180px; resize:vertical; padding:9px; border:1px solid #849797; border-radius:8px }
+.resume-import input::file-selector-button { padding:7px 10px; margin-right:8px; background:var(--soft); border:1px solid var(--line); border-radius:6px; font:inherit }
+.resume-import .error { margin-top:8px; color:#912e30; font-size:.9rem }
+.resume-import output { display:block; margin-top:8px }
 .workspace { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(0,1fr); gap:20px; align-items:start; margin-top:30px }
 .stack { display:grid; gap:18px; min-width:0 }
 .card { border:1px solid var(--line); border-radius:16px; background:var(--surface); padding:clamp(16px,3vw,25px); min-width:0 }
@@ -81,6 +89,7 @@ select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); backg
     <div class="controls" id="guide-actions">
       <button type="button" id="next-action"></button>
       <a class="guide-link" id="review-link" href="#review-heading" hidden>See résumé review</a>
+      <a class="guide-link" id="own-resume-link" href="#resume-import">Use your own résumé</a>
     </div>
   </section>
   <div class="workspace">
@@ -92,6 +101,23 @@ select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); backg
       </section>
       <section class="card" id="resume-card" aria-labelledby="resume-heading">
         <div class="row"><h2 id="resume-heading">Résumé</h2><label id="version-label" hidden>Version <select id="version"></select></label></div>
+        <details class="resume-entry" id="resume-import">
+          <summary>Upload or paste your résumé</summary>
+          <form class="resume-import" id="resume-import-form">
+            <p class="hint" id="resume-privacy">This private preview keeps your text on this page. Reloading clears it.</p>
+            <label for="resume-file">Upload a file</label>
+            <input id="resume-file" type="file" accept=".pdf,.docx,.txt" aria-describedby="resume-formats">
+            <p class="hint" id="resume-formats">PDF with selectable text, DOCX, or TXT. Up to 10 MB.</p>
+            <label for="resume-text">Paste or review résumé text</label>
+            <textarea id="resume-text" maxlength="85000" aria-describedby="resume-privacy" autocomplete="off" spellcheck="false" required></textarea>
+            <div class="controls">
+              <button type="submit" id="confirm-resume-text" disabled>Confirm résumé text</button>
+              <button type="button" class="secondary" id="clear-resume-text" disabled>Clear text</button>
+            </div>
+            <output class="hint" id="resume-import-status" aria-live="polite"></output>
+            <p class="error" id="resume-import-error" role="alert" hidden></p>
+          </form>
+        </details>
         <p class="caption" id="resume-caption">Generate a résumé from the sample career profile to review it here.</p>
         <pre class="document" id="resume" hidden></pre>
         <div class="controls" id="resume-actions" hidden>
@@ -399,5 +425,6 @@ byId("download").addEventListener("click", () => {
 });
 render();
 </script>
+<script type="module" src="./resume-import.mjs"></script>
 </body>
 </html>

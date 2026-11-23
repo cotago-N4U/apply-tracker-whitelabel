@@ -1,0 +1,13 @@
+{
+  "name": "cotaform-apply-preview",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@zip.js/zip.js": "2.25.0",
+    "pdfjs-dist": "5.6.205"
+  }
+}
