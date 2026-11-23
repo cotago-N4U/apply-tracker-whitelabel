@@ -29,7 +29,6 @@ h3 { font-size:1rem }
 .guide .caption { max-width:72ch }
 .guide-link { align-self:center; color:var(--accent); font-size:.9rem; font-weight:650 }
 .sample-evidence { margin-top:10px; max-width:70ch; padding:8px 12px; border-left:3px solid #7ea99e; font-size:.9rem }
-.resume-entry { margin-top:12px }
 .resume-import { margin-top:14px; padding-top:14px; border-top:1px solid var(--line) }
 .resume-import label { display:block; margin-top:14px; font-size:.9rem; font-weight:650 }
 .resume-import input, .resume-import textarea { display:block; width:100%; margin-top:5px; font:inherit }
@@ -68,7 +67,7 @@ summary + ul { margin-bottom:0 }
 select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); background:#fff; padding:7px; border:1px solid #849797; border-radius:6px }
 @media (max-width:750px) {
   .workspace { grid-template-columns:1fr }
-  .workspace .stack { display:contents }
+  #sample-workspace .workspace .stack { display:contents }
   #job-card { order:1 }
   #review-card { order:2 }
   #resume-card { order:3 }
@@ -78,9 +77,10 @@ select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); backg
 </style>
 </head>
 <body>
-<header><div class="top"><div class="brand">COTAFORM <span>Apply</span></div><div class="preview">Demo workspace</div></div></header>
+<header><div class="top"><div class="brand">COTAFORM <span>Apply</span></div><div class="preview" id="workspace-label">Sample walkthrough</div></div></header>
 <main>
-  <h1>Application package</h1>
+ <div id="sample-workspace">
+  <h1 id="sample-heading" tabindex="-1">Application package</h1>
   <p class="subtitle">Use the fictional job and career profile to fix one résumé gap and attach the revised PDF to the job.</p>
   <section class="guide" aria-labelledby="guide-title">
     <h2 id="guide-title" tabindex="-1"></h2>
@@ -89,7 +89,7 @@ select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); backg
     <div class="controls" id="guide-actions">
       <button type="button" id="next-action"></button>
       <a class="guide-link" id="review-link" href="#review-heading" hidden>See résumé review</a>
-      <a class="guide-link" id="own-resume-link" href="#resume-import">Use your own résumé</a>
+      <button type="button" class="secondary" id="own-resume-link">Use your own résumé</button>
     </div>
   </section>
   <div class="workspace">
@@ -101,23 +101,6 @@ select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); backg
       </section>
       <section class="card" id="resume-card" aria-labelledby="resume-heading">
         <div class="row"><h2 id="resume-heading">Résumé</h2><label id="version-label" hidden>Version <select id="version"></select></label></div>
-        <details class="resume-entry" id="resume-import">
-          <summary>Upload or paste your résumé</summary>
-          <form class="resume-import" id="resume-import-form">
-            <p class="hint" id="resume-privacy">This private preview keeps your text on this page. Reloading clears it.</p>
-            <label for="resume-file">Upload a file</label>
-            <input id="resume-file" type="file" accept=".pdf,.docx,.txt" aria-describedby="resume-formats">
-            <p class="hint" id="resume-formats">PDF with selectable text, DOCX, or TXT. Up to 10 MB.</p>
-            <label for="resume-text">Paste or review résumé text</label>
-            <textarea id="resume-text" maxlength="85000" aria-describedby="resume-privacy" autocomplete="off" spellcheck="false" required></textarea>
-            <div class="controls">
-              <button type="submit" id="confirm-resume-text" disabled>Confirm résumé text</button>
-              <button type="button" class="secondary" id="clear-resume-text" disabled>Clear text</button>
-            </div>
-            <output class="hint" id="resume-import-status" aria-live="polite"></output>
-            <p class="error" id="resume-import-error" role="alert" hidden></p>
-          </form>
-        </details>
         <p class="caption" id="resume-caption">Generate a résumé from the sample career profile to review it here.</p>
         <pre class="document" id="resume" hidden></pre>
         <div class="controls" id="resume-actions" hidden>
@@ -149,6 +132,59 @@ select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); backg
           <ul class="requirements" id="profile-evidence"></ul>
         </details>
       </section>
+    </div>
+  </div>
+ </div>
+  <div id="personal-workspace" hidden>
+    <div class="row">
+      <h1 id="personal-heading" tabindex="-1">Your application</h1>
+      <button type="button" class="secondary" id="return-to-sample">Back to sample walkthrough</button>
+    </div>
+    <p class="subtitle">Confirm your résumé, then attach it to a job you enter.</p>
+    <div class="workspace">
+      <section class="card" aria-labelledby="personal-resume-heading">
+        <h2 id="personal-resume-heading">Your résumé</h2>
+          <form class="resume-import" id="resume-import-form">
+            <p class="hint" id="resume-privacy">Your résumé stays in this tab. Reloading clears your résumé, job, and attachment.</p>
+            <label for="resume-file">Upload a file</label>
+            <input id="resume-file" type="file" accept=".pdf,.docx,.txt" aria-describedby="resume-formats">
+            <p class="hint" id="resume-formats">PDF with selectable text, DOCX, or TXT. Up to 10 MB.</p>
+            <label for="resume-text">Paste or review résumé text</label>
+            <textarea id="resume-text" maxlength="85000" aria-describedby="resume-privacy" autocomplete="off" spellcheck="false" required></textarea>
+            <div class="controls">
+              <button type="submit" id="confirm-resume-text" disabled>Confirm résumé text</button>
+              <button type="button" class="secondary" id="clear-resume-text" disabled>Clear résumé</button>
+            </div>
+            <output class="hint" id="resume-import-status" aria-live="polite"></output>
+            <p class="error" id="resume-import-error" role="alert" hidden></p>
+          </form>
+        <section class="check" aria-labelledby="confirmed-heading" id="confirmed-resume" hidden>
+          <h3 id="confirmed-heading" tabindex="-1">Confirmed résumé text</h3>
+          <p class="caption" id="confirmed-filename"></p>
+          <pre class="document" id="confirmed-text"></pre>
+        </section>
+      </section>
+      <div class="stack">
+        <section class="card" aria-labelledby="personal-job-heading">
+          <h2 id="personal-job-heading">Your job</h2>
+          <form id="personal-job-form" class="resume-import" autocomplete="off">
+            <label for="personal-job-title">Job title</label>
+            <input id="personal-job-title" type="text" maxlength="180" pattern=".*\S.*" required>
+            <label for="personal-job-company">Company (optional)</label>
+            <input id="personal-job-company" type="text" maxlength="180">
+            <div class="controls"><button type="submit" class="secondary">Use this job</button></div>
+          </form>
+        </section>
+        <section class="card" aria-labelledby="personal-attachment-heading">
+          <h2 id="personal-attachment-heading">Résumé attachment</h2>
+          <p class="caption" id="attachment-instructions">Confirm your résumé and add a job to attach it.</p>
+          <div class="controls">
+            <button type="button" id="attach-personal-resume" disabled>Attach your résumé</button>
+            <button type="button" class="secondary" id="download-personal-resume" hidden>Download attachment</button>
+          </div>
+          <p class="caption" role="status" id="personal-attachment-status" hidden></p>
+        </section>
+      </div>
     </div>
   </div>
 </main>

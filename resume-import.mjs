@@ -8,13 +8,20 @@ const wordNamespaces = new Set([
 ]);
 
 const byId = (id) => document.getElementById(id);
-const details = byId("resume-import");
 const fileInput = byId("resume-file");
 const textarea = byId("resume-text");
 const confirm = byId("confirm-resume-text");
 const clear = byId("clear-resume-text");
 const status = byId("resume-import-status");
 const error = byId("resume-import-error");
+const jobTitle = byId("personal-job-title");
+const jobCompany = byId("personal-job-company");
+const attach = byId("attach-personal-resume");
+const download = byId("download-personal-resume");
+const attachments = new Map();
+let imported;
+let confirmed;
+let job;
 let importing = false;
 let zipModule;
 
@@ -28,8 +35,23 @@ function setError(message = "") {
 function refreshControls() {
   fileInput.disabled = importing;
   textarea.readOnly = importing;
-  confirm.disabled = importing || !textarea.value.trim();
+  const text = textarea.value.trim();
+  confirm.disabled = importing || !text || confirmed?.text === text;
   clear.disabled = importing || !textarea.value;
+  const attachment = attachments.get(job?.key);
+  const jobChanged = job && (job.title !== jobTitle.value.trim() || job.company !== jobCompany.value.trim());
+  attach.disabled = importing || !job || jobChanged || !confirmed || attachment === confirmed;
+  attach.textContent = attachment ? "Replace attached résumé" : "Attach your résumé";
+  download.hidden = !attachment;
+  byId("confirmed-resume").hidden = !confirmed;
+  byId("confirmed-text").textContent = confirmed?.text ?? "";
+  byId("confirmed-filename").textContent = confirmed ? "Attachment file · " + confirmed.file.name : "";
+  const attachmentStatus = byId("personal-attachment-status");
+  attachmentStatus.hidden = !attachment;
+  attachmentStatus.textContent = attachment ? "Attached " + attachment.file.name + " to " + job.label + "." : "";
+  byId("attachment-instructions").textContent = jobChanged
+    ? "Save your job changes before attaching."
+    : job && confirmed ? "Attach the confirmed résumé to " + job.label + "." : "Confirm your résumé and add a job to attach it.";
 }
 
 function vendor(name) {
@@ -138,12 +160,16 @@ async function importFile(file) {
   return text;
 }
 
-byId("own-resume-link").addEventListener("click", (event) => {
-  event.preventDefault();
-  details.open = true;
-  fileInput.focus({ preventScroll: true });
-  details.scrollIntoView({ block: "start" });
-});
+function showPersonalWorkspace(personal) {
+  byId("sample-workspace").hidden = personal;
+  byId("personal-workspace").hidden = !personal;
+  byId("workspace-label").textContent = personal ? "Private preview" : "Sample walkthrough";
+  byId(personal ? "personal-heading" : "sample-heading").focus({ preventScroll: true });
+  window.scrollTo(0, 0);
+}
+
+byId("own-resume-link").addEventListener("click", () => showPersonalWorkspace(true));
+byId("return-to-sample").addEventListener("click", () => showPersonalWorkspace(false));
 
 fileInput.addEventListener("change", async () => {
   const file = fileInput.files?.[0];
@@ -153,7 +179,10 @@ fileInput.addEventListener("change", async () => {
   status.textContent = "Extracting text…";
   refreshControls();
   try {
-    textarea.value = await importFile(file);
+    const text = await importFile(file);
+    imported = { file, text };
+    confirmed = undefined;
+    textarea.value = text;
     status.textContent = "Text extracted. Check the reading order and edit anything that needs correction.";
     textarea.focus();
   } catch (cause) {
@@ -167,6 +196,7 @@ fileInput.addEventListener("change", async () => {
 });
 
 textarea.addEventListener("input", () => {
+  confirmed = undefined;
   status.textContent = "";
   setError();
   refreshControls();
@@ -174,12 +204,22 @@ textarea.addEventListener("input", () => {
 
 byId("resume-import-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  if (importing || !textarea.value.trim()) return;
-  textarea.value = textarea.value.trim();
-  status.textContent = "Résumé text confirmed for this session. The sample job and sample score use the fictional profile.";
+  const text = textarea.value.trim();
+  if (importing || !text) return;
+  textarea.value = text;
+  const original = imported?.text === text;
+  const file = original ? imported.file : new File([text], "resume.txt", { type: "text/plain;charset=utf-8" });
+  confirmed = { text, file };
+  status.textContent = original
+    ? "Résumé confirmed. You can attach your original file."
+    : "Résumé confirmed. You can attach the confirmed text as a TXT file.";
+  refreshControls();
+  byId("confirmed-heading").focus();
 });
 
 clear.addEventListener("click", () => {
+  imported = undefined;
+  confirmed = undefined;
   textarea.value = "";
   setError();
   status.textContent = "Résumé text cleared.";
@@ -187,12 +227,52 @@ clear.addEventListener("click", () => {
   textarea.focus();
 });
 
-window.addEventListener("pageshow", (event) => {
-  if (!event.persisted) return;
+byId("personal-job-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const title = jobTitle.value.trim();
+  const company = jobCompany.value.trim();
+  if (!title) return;
+  job = { title, company, label: company ? title + " at " + company : title, key: JSON.stringify([title, company]) };
+  refreshControls();
+  byId("attachment-instructions").textContent = confirmed
+    ? "Job saved. Attach the confirmed résumé to " + job.label + "."
+    : "Job saved. Confirm your résumé to attach it to " + job.label + ".";
+});
+jobTitle.addEventListener("input", refreshControls);
+jobCompany.addEventListener("input", refreshControls);
+
+attach.addEventListener("click", () => {
+  if (attach.disabled) return;
+  attachments.set(job.key, confirmed);
+  refreshControls();
+  download.focus();
+});
+download.addEventListener("click", () => {
+  const attachment = attachments.get(job?.key);
+  if (!attachment) return;
+  const url = URL.createObjectURL(attachment.file);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = attachment.file.name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+});
+
+function resetPersonalWorkspace() {
+  imported = undefined;
+  confirmed = undefined;
+  job = undefined;
+  attachments.clear();
+  fileInput.value = "";
   textarea.value = "";
+  jobTitle.value = "";
+  jobCompany.value = "";
   status.textContent = "";
   setError();
   refreshControls();
+}
+window.addEventListener("pageshow", (event) => {
+  if (!event.persisted) return;
+  resetPersonalWorkspace();
 });
-textarea.value = "";
-refreshControls();
+resetPersonalWorkspace();
