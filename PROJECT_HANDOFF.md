@@ -55,6 +55,14 @@ Use the recovered `cotago-N4U/apply-tracker` main at `cf1f23175671b5d8e286a95211
 - The comparison shows a visible version and counts required and preferred items before running. Heading normalization supports copied Markdown headings. Longer PDF text lines are compared in overlapping excerpts. Duration evidence recognizes work-history date ranges with month names and still requires user verification.
 - Regression tests cover the Amazon posting's layout, two required and eight preferred qualifications, and creative leadership/date evidence in long synthetic résumé text. Desktop and mobile browser smoke tests also pass. The actual user PDF and signed-in hosted walkthrough remain unverified.
 
+## Preview build 4
+
+- Source commit: `92e1335c1ade9d54dfc7dc1185e105e437d4d998`
+- Ready Vercel preview deployment: `dpl_DpoXVAr2vsu3ZhXpyhFqPoDZA3gz`
+- Preview URL: https://apply-tracker-whitelabel-jf0qgdjft-n4u.vercel.app/
+- Cota confirmed Comparison v3 returned 10 requirements and 8 possible excerpts. Executive influence in a skills list was incorrectly surfaced for creative executive tenure and mentoring. The matcher now prefers dated creative leadership titles and requires evidence of coaching, mentoring or staff development for the mentoring example. A degree excerpt is labeled as the degree alternative.
+- The regression covers the misleading skills list, a dated title, a bachelor’s degree, and explicit staff training. Local desktop and mobile browser tests passed. The revised build did not use Cota’s résumé and needs signed-in verification with his PDF.
+
 ## Next decision
 
 Have Cota assess the comparison using a real role. Collect examples of useful excerpts, irrelevant matches and qualifications missed through different wording before choosing revision assistance or a richer comparison method. Keep package status distinct from application submission.
