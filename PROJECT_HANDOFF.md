@@ -29,8 +29,16 @@ Use the recovered `cotago-N4U/apply-tracker` main at `cf1f23175671b5d8e286a95211
 - Preview URL: https://apply-tracker-whitelabel-2rkukzb2u-n4u.vercel.app/
 - Use your own résumé opens a personal workspace. Confirming shows the user's extracted or pasted text. Enter a job title and optional company, choose Use this job, then attach and download the confirmed résumé. Unchanged imports retain the exact original file bytes; edited or pasted content is attached as a TXT file. The previous attachment remains available while editing until the user explicitly replaces it.
 - Local desktop and mobile Chromium verified workspace isolation, original PDF byte-for-byte, edited TXT attachment, file and job clearance on reload, no transfer of personal content, and the sample flow. Signed-in hosted walkthrough remains pending.
-- Real job comparison and revision into a new formatted PDF are pending. All personal input and attachments are scoped to this tab session.
+- See the latest comparison build below. Revision into a new formatted PDF is pending. All personal input and attachments are scoped to this tab session.
+
+## Job-posting comparison preview
+
+- Source commit: `d41ce7d4fde99981e46c640bf011c894aef874d2`
+- Ready Vercel preview deployment: `dpl_FxdH5nRvCdMMJCRQ2zq8H9TKwC4i`
+- Preview URL: https://apply-tracker-whitelabel-e43f80ads-n4u.vercel.app/
+- In Your application, confirm a résumé, paste the job description under Your job, and choose Use this job. Verify or edit the extracted requirements before comparing. The browser finds related résumé excerpts by word overlap and labels gaps as missing clear text. It does not establish qualification or provide an ATS score.
+- Local Chromium at desktop and emulated mobile widths passed suggestions, excerpts, missing evidence, manual requirements, stale-result invalidation, attachment, and reload clearance. The test checked that no input was sent or persisted. Signed-in hosted walkthrough remains pending.
 
 ## Next decision
 
-Ask Cota to assess whether the guide makes the next action, the score change, and the attachment clear. The next real-data test should compare the confirmed résumé with a pasted job description. Integrate those inputs and the resulting review with the recovered tracker's saved opportunity and package records in an isolated commercial backend. Keep package status distinct from application submission.
+Have Cota assess the comparison using a real role. Collect examples of useful excerpts, irrelevant matches and qualifications missed through different wording before choosing revision assistance or a richer comparison method. Keep package status distinct from application submission.
