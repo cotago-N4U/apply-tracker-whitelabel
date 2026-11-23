@@ -12,7 +12,7 @@ Use the recovered `cotago-N4U/apply-tracker` main at `cf1f23175671b5d8e286a95211
 - Preview URL: https://apply-tracker-whitelabel-pzxqr64gh-n4u.vercel.app/
 - Anonymous request redirected to Vercel sign-in. The source file at the commit matched the tested local file.
 - The DOM smoke test exercised saving, generating, score and evidence gap, PDF attachment and download, and selecting the attached version after reload. Poppler independently extracted the generated PDF and verified content order.
-- Signed-in hosted UI and mobile rendering still need a smoke check. There are no database migrations, production credentials, or DNS changes in this preview. Reusing the verified deployment URL gives the exact build above.
+- The exact source also passed local Chromium workflows at 1440px desktop and 390px emulated mobile with touch. A signed-in smoke check on the hosted URL is pending. There are no database migrations, production credentials, or DNS changes in this preview. Reusing the verified deployment URL gives the exact build above.
 
 ## Next decision
 
