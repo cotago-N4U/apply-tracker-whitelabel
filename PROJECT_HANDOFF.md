@@ -22,6 +22,15 @@ Use the recovered `cotago-N4U/apply-tracker` main at `cf1f23175671b5d8e286a95211
 - Local desktop and mobile Chromium accepted pasted text and all three file formats, preserved existing text on a blank PDF import error, loaded no external resources, issued no submission requests and retained the sample workflow. Signed-in walkthrough on the hosted URL remains pending.
 - This preview does not score personal text against the sample job. Real job entry and comparison are the next integration milestone.
 
+## Personal application workspace
+
+- Source commit: `8c97fb46e414186d5d68c917902b8b87e568eae1`
+- Ready Vercel preview deployment: `dpl_CogbyaKgyrMS29N3oW7AJoL3weMt`
+- Preview URL: https://apply-tracker-whitelabel-2rkukzb2u-n4u.vercel.app/
+- Use your own résumé opens a personal workspace. Confirming shows the user's extracted or pasted text. Enter a job title and optional company, choose Use this job, then attach and download the confirmed résumé. Unchanged imports retain the exact original file bytes; edited or pasted content is attached as a TXT file. The previous attachment remains available while editing until the user explicitly replaces it.
+- Local desktop and mobile Chromium verified workspace isolation, original PDF byte-for-byte, edited TXT attachment, file and job clearance on reload, no transfer of personal content, and the sample flow. Signed-in hosted walkthrough remains pending.
+- Real job comparison and revision into a new formatted PDF are pending. All personal input and attachments are scoped to this tab session.
+
 ## Next decision
 
-Ask Cota to assess whether the guide makes the next action, the score change, and the attachment clear. The next real-data test should pair the résumé intake with a user-added job. Integrate those inputs and the resulting review with the recovered tracker's saved opportunity and package records in an isolated commercial backend. Keep package status distinct from application submission.
+Ask Cota to assess whether the guide makes the next action, the score change, and the attachment clear. The next real-data test should compare the confirmed résumé with a pasted job description. Integrate those inputs and the resulting review with the recovered tracker's saved opportunity and package records in an isolated commercial backend. Keep package status distinct from application submission.
