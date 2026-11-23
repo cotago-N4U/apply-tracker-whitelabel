@@ -25,6 +25,10 @@ h1 { font-size:clamp(2rem,6vw,3.65rem); line-height:1.05; letter-spacing:-.055em
 h2 { font-size:1.25rem; letter-spacing:-.02em }
 h3 { font-size:1rem }
 .subtitle { color:var(--muted); margin-top:.75rem }
+.guide { margin-top:24px; border:1px solid #a5c4ba; border-radius:16px; padding:clamp(16px,3vw,25px); background:var(--soft) }
+.guide .caption { max-width:72ch }
+.guide-link { align-self:center; color:var(--accent); font-size:.9rem; font-weight:650 }
+.sample-evidence { margin-top:10px; max-width:70ch; padding:8px 12px; border-left:3px solid #7ea99e; font-size:.9rem }
 .workspace { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(0,1fr); gap:20px; align-items:start; margin-top:30px }
 .stack { display:grid; gap:18px; min-width:0 }
 .card { border:1px solid var(--line); border-radius:16px; background:var(--surface); padding:clamp(16px,3vw,25px); min-width:0 }
@@ -54,9 +58,13 @@ button:disabled { border-color:var(--line); background:#eaf0ef; color:#4d626b; c
 summary { cursor:pointer; font-weight:650 }
 summary + ul { margin-bottom:0 }
 select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); background:#fff; padding:7px; border:1px solid #849797; border-radius:6px }
-#feedback { min-height:1.5em; margin-top:10px }
 @media (max-width:750px) {
   .workspace { grid-template-columns:1fr }
+  .workspace .stack { display:contents }
+  #job-card { order:1 }
+  #review-card { order:2 }
+  #resume-card { order:3 }
+  #profile-card { order:4 }
   .preview { font-size:.75rem }
 }
 </style>
@@ -65,32 +73,35 @@ select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); backg
 <header><div class="top"><div class="brand">COTAFORM <span>Apply</span></div><div class="preview">Demo workspace</div></div></header>
 <main>
   <h1>Application package</h1>
-  <p class="subtitle">Save a job, build a tailored résumé, and review it before you apply.</p>
+  <p class="subtitle">Use the fictional job and career profile to fix one résumé gap and attach the revised PDF to the job.</p>
+  <section class="guide" aria-labelledby="guide-title">
+    <h2 id="guide-title" tabindex="-1"></h2>
+    <p class="caption" id="guide-description" aria-live="polite"></p>
+    <p class="sample-evidence" id="guide-evidence" hidden></p>
+    <div class="controls" id="guide-actions">
+      <button type="button" id="next-action"></button>
+      <a class="guide-link" id="review-link" href="#review-heading" hidden>See résumé review</a>
+    </div>
+  </section>
   <div class="workspace">
     <div class="stack">
-      <section class="card" aria-labelledby="job-title">
+      <section class="card" id="job-card" aria-labelledby="job-title">
         <div class="row"><h2 id="job-title"></h2><span class="status pending" id="job-status">Sample posting</span></div>
         <p class="caption" id="job-meta"></p>
         <ul class="requirements" id="job-requirements"></ul>
-        <div class="controls">
-          <button id="save-job">Save sample job</button>
-          <button id="generate" class="secondary" disabled>Generate résumé</button>
-        </div>
-        <p class="hint" id="feedback" role="status"></p>
       </section>
-      <section class="card" aria-labelledby="resume-heading">
+      <section class="card" id="resume-card" aria-labelledby="resume-heading">
         <div class="row"><h2 id="resume-heading">Résumé</h2><label id="version-label" hidden>Version <select id="version"></select></label></div>
         <p class="caption" id="resume-caption">Generate a résumé from the sample career profile to review it here.</p>
         <pre class="document" id="resume" hidden></pre>
         <div class="controls" id="resume-actions" hidden>
-          <button id="attach">Attach PDF to job</button>
-          <button class="secondary" id="download" hidden>Download PDF</button>
+          <button class="secondary" id="download">Download PDF</button>
         </div>
         <p class="hint" id="storage-status" role="status" hidden></p>
       </section>
     </div>
     <div class="stack">
-      <section class="card" aria-labelledby="review-heading">
+      <section class="card" id="review-card" aria-labelledby="review-heading">
         <h2 id="review-heading">Résumé review</h2>
         <p class="caption" id="review-empty">Results appear automatically when you generate a version.</p>
         <div class="check" id="match-panel" hidden>
@@ -103,7 +114,7 @@ select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); backg
           <p class="caption" id="ats-detail"></p>
         </div>
       </section>
-      <section class="card">
+      <section class="card" id="profile-card">
         <h2>Sample career profile</h2>
         <p class="caption">Jordan Lee · Fictional candidate</p>
         <p class="hint">Demo progress is saved in this browser.</p>
@@ -142,6 +153,10 @@ const profile = {
     { id: "healthcare", text: "Partnered with compliance to review member communications for a regulated health plan." },
   ],
 };
+const budgetEvidence = {
+  id: "budget",
+  text: "Managed an annual marketing budget of $240,000 and tracked spending across campaigns.",
+};
 
 const storageKey = "cotaform-apply-demo-v1";
 const byId = (id) => document.getElementById(id);
@@ -166,8 +181,9 @@ function persist() {
   }
 }
 
-function buildResume() {
-  const evidenceById = new Map(profile.evidence.map((item) => [item.id, item.text]));
+function buildResume(includeBudgetEvidence) {
+  const approvedEvidence = includeBudgetEvidence ? [...profile.evidence, budgetEvidence] : profile.evidence;
+  const evidenceById = new Map(approvedEvidence.map((item) => [item.id, item.text]));
   const evidence = job.requirements.flatMap(({ id }) =>
     evidenceById.has(id) ? [{ id, text: evidenceById.get(id) }] : []
   );
@@ -249,16 +265,64 @@ function currentVersion() {
   return state.versions.find((item) => item.number === selected);
 }
 
+function nextStep(version) {
+  if (!state.jobId) return {
+    title: "Start with the fictional job",
+    description: "Save the Harborline Health posting so the résumé and its review have a job to stay with.",
+    label: "Save sample job",
+    run: () => { state.jobId = job.id; },
+  };
+  if (!version) return {
+    title: "Generate the first draft",
+    description: "The app will use Jordan Lee’s sample career profile and compare the draft with the job requirements.",
+    label: "Generate first draft",
+    run: () => generateVersion(false),
+  };
+  if (!version.includesBudgetEvidence) {
+    const revision = state.versions.find((item) => item.includesBudgetEvidence);
+    return {
+      title: "Review the budget gap",
+      description: "The draft covers the required qualifications. It has no evidence for the employer’s preferred budget experience. This additional fictional career example is available to approve.",
+      evidence: budgetEvidence.text,
+      label: revision ? "View revised résumé" : "Approve example and revise",
+      run: () => {
+        if (revision) selected = revision.number;
+        else generateVersion(true);
+      },
+    };
+  }
+  if (!version.attached) {
+    const firstDraft = state.versions.find((item) => !item.includesBudgetEvidence);
+    return {
+      title: "Attach the revised résumé",
+      description: "Adding the approved example changed the job match from " + firstDraft.review.score +
+        " to " + version.review.score + ". Review the new bullet and attach this exact PDF to the job.",
+      label: "Attach revised PDF",
+      run: () => { version.attached = true; },
+    };
+  }
+  return {
+    title: "You’ve completed the demo",
+    description: "Version " + version.number + " is attached to the Harborline Health job. You can compare versions or download the exact PDF you attached.",
+  };
+}
+
 function render() {
   const version = currentVersion();
+  const step = nextStep(version);
+  byId("guide-title").textContent = step.title;
+  byId("guide-description").textContent = step.description;
+  byId("guide-evidence").textContent = step.evidence ?? "";
+  byId("guide-evidence").hidden = !step.evidence;
+  byId("next-action").textContent = step.label ?? "";
+  byId("next-action").hidden = !step.run;
+  byId("review-link").hidden = !version;
   byId("job-status").textContent = state.jobId ? "Saved to tracker" : "Sample posting";
   byId("job-status").classList.toggle("pending", !state.jobId);
-  byId("save-job").disabled = Boolean(state.jobId);
-  byId("generate").disabled = !state.jobId;
-  byId("generate").textContent = state.versions.length ? "Generate new version" : "Generate résumé";
-  for (const id of ["version-label", "resume", "resume-actions", "match-panel", "ats-panel"]) {
+  for (const id of ["version-label", "resume", "match-panel", "ats-panel"]) {
     byId(id).hidden = !version;
   }
+  byId("resume-actions").hidden = !version?.attached;
   byId("review-empty").hidden = Boolean(version);
   if (!version) return;
   byId("version").replaceChildren(...[...state.versions].reverse().map((item) =>
@@ -269,12 +333,11 @@ function render() {
     ? "PDF attached to " + job.title + " · Version " + version.number
     : "Draft · Generated from the approved sample evidence";
   byId("resume").textContent = version.lines.join("\n");
-  byId("attach").disabled = version.attached;
-  byId("attach").textContent = version.attached ? "PDF attached" : "Attach PDF to job";
-  byId("download").hidden = !version.attached;
   byId("storage-status").hidden = storageAvailable;
   byId("storage-status").textContent = storageAvailable ? "" : "Browser storage is unavailable. Work lasts until you close this page.";
   byId("score").textContent = version.review.score + " / 100";
+  const approvedEvidence = version.includesBudgetEvidence ? [...profile.evidence, budgetEvidence] : profile.evidence;
+  byId("profile-evidence").replaceChildren(...approvedEvidence.map((item) => listItem(item.text)));
   byId("findings").replaceChildren(...version.review.findings.map((item) => {
     const li = document.createElement("li");
     if (!item.evidence) li.className = "gap";
@@ -300,40 +363,29 @@ byId("job-requirements").replaceChildren(...job.requirements.map((item) =>
 ));
 byId("profile-evidence").replaceChildren(...profile.evidence.map((item) => listItem(item.text)));
 
-byId("save-job").addEventListener("click", () => {
-  state.jobId = job.id;
-  persist();
-  render();
-  byId("feedback").textContent = "Job saved. You can generate a résumé now.";
-  byId("generate").focus();
-});
-byId("generate").addEventListener("click", () => {
-  if (!state.jobId) return;
-  const { evidence, lines: sourceLines } = buildResume();
+function generateVersion(includesBudgetEvidence) {
+  const { evidence, lines: sourceLines } = buildResume(includesBudgetEvidence);
   const lines = formatLines(sourceLines);
   const pdf = makePdf(lines);
   const number = (state.versions.at(-1)?.number ?? 0) + 1;
   state.versions.push({
     number, lines, pdf, review: evaluate(evidence, pdf, lines), attached: false,
-    jobRevision: job.revision, profileRevision: profile.revision,
+    jobRevision: job.revision, profileRevision: profile.revision, includesBudgetEvidence,
   });
   selected = number;
+}
+
+byId("next-action").addEventListener("click", () => {
+  const step = nextStep(currentVersion());
+  if (!step.run) return;
+  step.run();
   persist();
   render();
-  byId("feedback").textContent = "Version " + number + " is ready to review.";
+  if (byId("next-action").hidden) byId("guide-title").focus();
 });
 byId("version").addEventListener("change", (event) => {
   selected = Number(event.target.value);
   render();
-});
-byId("attach").addEventListener("click", () => {
-  const version = currentVersion();
-  if (!version || version.attached) return;
-  version.attached = true;
-  persist();
-  render();
-  byId("feedback").textContent = "Version " + version.number + " attached to the saved job.";
-  byId("download").focus();
 });
 byId("download").addEventListener("click", () => {
   const version = currentVersion();
