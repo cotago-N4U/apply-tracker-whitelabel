@@ -63,4 +63,21 @@ const [creativeExperience, alternative] = compareResume(singlePdfLine, requireme
 assert.match(creativeExperience.evidence, /Senior Director, Brand, Creative & Marketing/);
 assert.match(alternative.evidence, /2011 – Mar 2026/);
 assert.match(alternative.note, /which alternative/);
-console.log("Plain and formatted posting copies retain 10 qualifications. Comparison finds title and month-year ranges in long PDF text.");
+
+const keywordList = "Brand Governance • Executive Influence • Creative Partnerships • Brand Measurement";
+const keywordsOnly = compareResume(keywordList, [requirements[0], requirements[5]]);
+assert.equal(keywordsOnly[0].evidence, null);
+assert.equal(keywordsOnly[1].evidence, null);
+const roleHistory = `Creative Executive
+Senior Director, Brand and Creative | Apr 2011 – Mar 2026
+${keywordList}
+Presented creative recommendations to the Senior Director.
+Trained staff in art direction.
+Bachelor of Arts, Art & Design`;
+const grounded = compareResume(roleHistory, [requirements[0], requirements[1], requirements[5]]);
+assert.match(grounded[0].evidence, /Senior Director, Brand and Creative.*2011/);
+assert.match(grounded[0].note, /dated work history/);
+assert.match(grounded[1].evidence, /Bachelor of Arts/);
+assert.match(grounded[1].note, /degree alternative/);
+assert.match(grounded[2].evidence, /Trained staff/);
+console.log("Amazon regression: filters footers and prioritizes dated roles, degree alternatives, and explicit coaching or training evidence.");
