@@ -63,6 +63,14 @@ Use the recovered `cotago-N4U/apply-tracker` main at `cf1f23175671b5d8e286a95211
 - Cota confirmed Comparison v3 returned 10 requirements and 8 possible excerpts. Executive influence in a skills list was incorrectly surfaced for creative executive tenure and mentoring. The matcher now prefers dated creative leadership titles and requires evidence of coaching, mentoring or staff development for the mentoring example. A degree excerpt is labeled as the degree alternative.
 - The regression covers the misleading skills list, a dated title, a bachelor’s degree, and explicit staff training. Local desktop and mobile browser tests passed. The revised build did not use Cota’s résumé and needs signed-in verification with his PDF.
 
+## Preview build 5
+
+- Source commit: `d23aaa733fa80ce663752e857c21fa6134df6e38`
+- Ready Vercel preview deployment: `dpl_8aoFgZUDsGMKnNhKqvc7VDUqRTNo`
+- Preview URL: https://apply-tracker-whitelabel-k4z19cnfx-n4u.vercel.app/
+- After comparison, Edit a copy of my résumé opens a manual draft. Compare draft reviews the same confirmed job requirements against the original and draft, showing changed or missing excerpts. Use revised text explicitly promotes the compared draft. Existing attachments are unchanged until the user replaces them, and the revised text exports as TXT. Inputs remain in browser tab memory.
+- Local desktop and emulated mobile Chromium verified the comparison, stale draft protection, explicit approval, byte-identical original PDF before replacement, exact revised TXT after replacement, and clearing on reload. Signed-in hosted response still needs owner verification. Formatted revision export and combined-tenure calculation remain outside this increment.
+
 ## Next decision
 
 Have Cota assess the comparison using a real role. Collect examples of useful excerpts, irrelevant matches and qualifications missed through different wording before choosing revision assistance or a richer comparison method. Keep package status distinct from application submission.
