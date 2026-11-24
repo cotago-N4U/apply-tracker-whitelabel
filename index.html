@@ -181,7 +181,7 @@ select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); backg
         <section class="card" aria-labelledby="personal-compare-heading">
           <div class="row">
             <h2 id="personal-compare-heading">Compare with your résumé</h2>
-            <span class="status pending">Preview build 4</span>
+            <span class="status pending">Preview build 5</span>
           </div>
           <p class="caption" id="compare-instructions">Confirm your résumé and save a job description to compare.</p>
           <form class="resume-import" id="resume-comparison-form" hidden>
@@ -196,6 +196,23 @@ select { max-width:100%; font:inherit; font-size:.88rem; color:var(--ink); backg
             <h3 id="comparison-summary" tabindex="-1"></h3>
             <p class="caption">This review looks for shared wording and common ways to describe similar work. Check each excerpt against the full requirement, including dates, seniority, and credentials.</p>
             <ul class="findings" id="personal-findings"></ul>
+            <div class="controls"><button type="button" class="secondary" id="start-resume-revision">Edit a copy of my résumé</button></div>
+            <section class="check" id="resume-revision" aria-labelledby="revision-heading" hidden>
+              <h3 id="revision-heading">Revised résumé draft</h3>
+              <form class="resume-import" id="resume-revision-form">
+                <label for="revision-text">Edit the draft</label>
+                <p class="hint" id="revision-instructions">Give earlier roles their own title and dates or clarify details you can verify. Compare the draft with the same requirements before using it.</p>
+                <textarea id="revision-text" maxlength="85000" aria-describedby="revision-instructions" autocomplete="off" spellcheck="false" required></textarea>
+                <div class="controls"><button type="submit" id="compare-draft" disabled>Compare draft</button></div>
+              </form>
+              <div class="check" id="revision-results" hidden>
+                <h3 id="revision-summary" tabindex="-1"></h3>
+                <ul class="findings" id="revision-findings"></ul>
+                <div class="controls"><button type="button" id="approve-resume-revision" disabled>Use revised text</button></div>
+                <p class="caption">You can attach the revised text as a TXT file. Your original uploaded file stays intact.</p>
+              </div>
+            </section>
+            <p class="caption" id="revision-status" role="status"></p>
           </div>
         </section>
         <section class="card" aria-labelledby="personal-attachment-heading">

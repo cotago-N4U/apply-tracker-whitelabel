@@ -22,6 +22,9 @@ const jobDescription = byId("personal-job-description");
 const requirementText = byId("comparison-requirements");
 const compare = byId("compare-resume");
 const comparisonError = byId("comparison-error");
+const draftText = byId("revision-text");
+const compareDraft = byId("compare-draft");
+const approveDraft = byId("approve-resume-revision");
 const attach = byId("attach-personal-resume");
 const download = byId("download-personal-resume");
 const attachments = new Map();
@@ -29,6 +32,7 @@ let imported;
 let confirmed;
 let job;
 let comparison;
+let revision;
 let importing = false;
 let zipModule;
 
@@ -81,6 +85,14 @@ function refreshControls() {
   const current = hasPosting && !importing && comparison?.job === job && comparison?.resume === confirmed
     && comparison?.requirements === requirementText.value;
   byId("personal-comparison").hidden = !current;
+  const revisingCurrent = Boolean(current && revision?.base === comparison);
+  const draft = draftText.value.trim();
+  byId("resume-revision").hidden = !revisingCurrent;
+  byId("start-resume-revision").hidden = revisingCurrent;
+  compareDraft.disabled = !revisingCurrent || !draft || draft === confirmed?.text;
+  const comparedDraft = revisingCurrent && revision.comparedText === draft;
+  byId("revision-results").hidden = !comparedDraft;
+  approveDraft.disabled = !comparedDraft;
 }
 
 function clearComparison() {
@@ -89,6 +101,7 @@ function clearComparison() {
   byId("personal-findings").replaceChildren();
   comparisonError.hidden = true;
   comparisonError.textContent = "";
+  byId("revision-status").textContent = "";
 }
 
 function vendor(name) {
@@ -293,18 +306,7 @@ requirementText.addEventListener("input", () => {
   refreshControls();
 });
 
-byId("resume-comparison-form").addEventListener("submit", (event) => {
-  event.preventDefault();
-  if (compare.disabled) return;
-  clearComparison();
-  const requirements = readRequirements(requirementText.value);
-  if (!requirements.length || requirements.length > maxRequirements) {
-    comparisonError.textContent = "Enter between 1 and " + maxRequirements + " requirements, one per line.";
-    comparisonError.hidden = false;
-    refreshControls();
-    return;
-  }
-  const findings = compareResume(confirmed.text, requirements);
+function showComparison(findings) {
   const related = findings.filter((finding) => finding.evidence).length;
   byId("comparison-summary").textContent = "Possible résumé evidence for " + related + " of " + findings.length + " requirements";
   byId("personal-findings").replaceChildren(...findings.map(({ category, text, evidence, wording, note }) => {
@@ -325,9 +327,90 @@ byId("resume-comparison-form").addEventListener("submit", (event) => {
     }
     return item;
   }));
-  comparison = { job, resume: confirmed, requirements: requirementText.value };
+  comparison = { job, resume: confirmed, requirements: requirementText.value, findings };
+}
+
+byId("resume-comparison-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (compare.disabled) return;
+  if (!byId("personal-comparison").hidden) {
+    byId("comparison-summary").focus();
+    return;
+  }
+  clearComparison();
+  const requirements = readRequirements(requirementText.value);
+  if (!requirements.length || requirements.length > maxRequirements) {
+    comparisonError.textContent = "Enter between 1 and " + maxRequirements + " requirements, one per line.";
+    comparisonError.hidden = false;
+    refreshControls();
+    return;
+  }
+  showComparison(compareResume(confirmed.text, requirements));
   refreshControls();
   byId("comparison-summary").focus();
+});
+
+byId("start-resume-revision").addEventListener("click", () => {
+  if (byId("personal-comparison").hidden) return;
+  revision = { base: comparison };
+  draftText.value = confirmed.text;
+  byId("revision-status").textContent = "";
+  refreshControls();
+  draftText.focus();
+});
+
+draftText.addEventListener("input", () => {
+  if (revision) revision.comparedText = undefined;
+  refreshControls();
+});
+
+byId("resume-revision-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (compareDraft.disabled) return;
+  const draft = draftText.value.trim();
+  const original = comparison.findings;
+  const revised = compareResume(draft, readRequirements(comparison.requirements));
+  const before = original.filter((finding) => finding.evidence).length;
+  const after = revised.filter((finding) => finding.evidence).length;
+  byId("revision-summary").textContent = "Requirements with possible evidence · " + before + " original · " + after + " draft";
+  const changes = revised.flatMap((finding, index) => {
+    const previous = original[index].evidence;
+    if (finding.evidence === previous) return [];
+    const item = document.createElement("li");
+    if (!finding.evidence) item.className = "gap";
+    const title = document.createElement("strong");
+    title.textContent = finding.text;
+    const oldText = document.createElement("p");
+    oldText.textContent = previous ? "Original · “" + previous + "”" : "Original · No excerpt found";
+    const newText = document.createElement("p");
+    newText.textContent = finding.evidence ? "Draft · “" + finding.evidence + "”" : "Draft · No excerpt found";
+    item.append(title, oldText, newText);
+    return [item];
+  });
+  if (!changes.length) {
+    const item = document.createElement("li");
+    item.textContent = "The draft surfaced the same excerpts. You can still use it if it reads more clearly.";
+    changes.push(item);
+  }
+  byId("revision-findings").replaceChildren(...changes);
+  revision.comparedText = draft;
+  revision.findings = revised;
+  refreshControls();
+  byId("revision-summary").focus();
+});
+
+approveDraft.addEventListener("click", () => {
+  if (approveDraft.disabled) return;
+  const text = revision.comparedText;
+  confirmed = { text, file: new File([text], "resume-revised.txt", { type: "text/plain;charset=utf-8" }) };
+  textarea.value = text;
+  showComparison(revision.findings);
+  revision = undefined;
+  draftText.value = "";
+  status.textContent = "Revised résumé text confirmed.";
+  byId("revision-status").textContent = "Revised text is ready to attach.";
+  refreshControls();
+  attach.focus();
 });
 
 attach.addEventListener("click", () => {
@@ -358,6 +441,8 @@ function resetPersonalWorkspace() {
   jobCompany.value = "";
   jobDescription.value = "";
   requirementText.value = "";
+  draftText.value = "";
+  revision = undefined;
   clearComparison();
   status.textContent = "";
   setError();
